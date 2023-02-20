@@ -50,7 +50,7 @@ miniDOT_cleaning_FUNC <- function(df){
   formatted_output <- as.data.frame(df2)
 }
 
-# Test that you r function works 
+# Test that your function works 
 test_df <- list_of_miniDOT_data[[8]]
 test_output <- miniDOT_cleaning_FUNC(test_df)
 head(test_output)
@@ -180,7 +180,7 @@ miniDOT_calibration_check_plot2
 
 
 # 7. Save Output 
-?ggsave(0)
+?ggsave()
 setwd("~/Equipment/miniDOT_Calibration_Check/Output_Figures")
 
 ggsave("Calibration_Check_Plot_R1_Holgerson_and_Alex.png", miniDOT_calibration_check_plot1, width = 190, height = 120, units = "mm")
