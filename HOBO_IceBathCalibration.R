@@ -52,72 +52,39 @@ clean_hobo_FUNC <- function(hobo_dat){
     head(output_clean_hobo_fun[[6]])
     lapply(output_clean_hobo_fun, nrow)
     
-# Just r bind it all together into one 
+# Bind all dataframes from all loggers into one long df  
     hobo_comp <- bind_rows(output_clean_hobo_fun)
     
+# Remove rows with NAs 
+   hobo_comp <- hobo_comp[!is.na(hobo_comp$Temp_C), ]
     
+   
 # Plot to check 
+    head(hobo_comp)
     hobo_icebath_check_plot  <- hobo_comp %>%
-      ggplot(aes(x=Date_Time, y = DOSat_per)) +
-      geom_line(aes(y = DOSat_per, color = Serial_Number)) + 
-      geom_point(aes(y = DOSat_per, color = Serial_Number)) + 
+      ggplot(aes(x=Date_Time, y = Temp_C)) +
+      geom_line(aes(y = Temp_C, color = Serial_Number)) + 
+      geom_point(aes(y = Temp_C, color = Serial_Number)) + 
       theme_bw() +
-      ylab("Dissolved Oxygen Saturation (%)") + xlab("Time") + ggtitle("miniDOT Calibration Check: Holgerson Lab and Alex")
-    miniDOT_calibration_check_plot1 
+      ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check")
+    hobo_icebath_check_plot 
     
-# Take Average temp for each serial number 
+# Trim to only the time window you are interested in 
     
+# Take Average temp and standard deviation of temps for each serial number 
+   
+    # Using Base R  
+    aggregate(hobo_comp$Temp_C, list(hobo_comp$Serial_Number), FUN=mean)
     
+    # Usign Dplyr 
+    avg_temps_hobo <- hobo_comp %>%
+      group_by(Serial_Number) %>%
+      summarise_at(vars(Temp_C), list(avg_temp = mean, sd_temp = sd))
     
-#### OLD 
-    
-  
-
-# Put data from all loggers into a single dataframe with each column being the temp from a different sensor for each timepoint 
-    hobo_dat_1 <- output_clean_hobo_fun[[1]]
-    hobo_dat_2 <- output_clean_hobo_fun[[2]]
-    hobo_dat_3 <- output_clean_hobo_fun[[3]]
-    hobo_dat_4 <- output_clean_hobo_fun[[4]]
-    hobo_dat_5 <- output_clean_hobo_fun[[5]]
-    hobo_dat_6 <- output_clean_hobo_fun[[6]]
-    hobo_dat_7 <- output_clean_hobo_fun[[7]]
-    hobo_comp <- full_join(hobo_dat_1, hobo_dat_2)
-    hobo_comp <- full_join(hobo_comp, hobo_dat_3)
-    hobo_comp <- full_join(hobo_comp, hobo_dat_4)
-    hobo_comp <- full_join(hobo_comp, hobo_dat_5)
-    hobo_comp <- full_join(hobo_comp, hobo_dat_6)
-    hobo_comp <- full_join(hobo_comp, hobo_dat_7)  # only keeping the times that they all have in common 
-    
-# Cut to only the time window that you are interested in 
-    
-    
+# Save the output as an excel document 
+    #   write_xlsx(avg_temps_hobo, "OutputFiles/hobo_icebathcalib_022123.xlsx")
     
     
     
 
-    
-
-# Being Lazy and trying to figure out how to pull all of the data frames out of the list and into the environment as seperate data frames without doing it one at a time 
-    #You could do it with a fore loop 
-    
-    # or just make a dataframe 
-    datacompile <- data.frame(x=c('a', 'b', 'c'),
-                              y = c(1,2,3))
-    datacompile <- data.frame(output_clean_hobo_fun[[1]][2],output_clean_hobo_fun[[2]][2])
-    
-    
-    names(output_clean_hobo_fun)
-    do.call("rbind", output_clean_hobo_fun)
-    
-    ?list2env()
-    list2env(output_clean_hobo_fun,globalenv())
-    
-    L <- list(a = 1, b = 2:4, p = pi, ff = gl(3, 4, labels = LETTERS[1:3]))
-    list2env(L)
-    
-    obj <- list(a=1:5, b=2:10, c=-5:5)
-    ls()
-    list2env(obj,globalenv())
-    ls()
-    lapply(seq_along(obj), function(i) assign(names(obj)[i], obj[[i]], envir = .GlobalEnv))
     
