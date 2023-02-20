@@ -55,9 +55,9 @@ clean_hobo_FUNC <- function(hobo_dat){
 # Bind all dataframes from all loggers into one long df  
     hobo_comp <- bind_rows(output_clean_hobo_fun)
     
+
 # Remove rows with NAs 
-   hobo_comp <- hobo_comp[!is.na(hobo_comp$Temp_C), ]
-    
+    hobo_comp <- hobo_comp[!is.na(hobo_comp$Temp_C), ]
    
 # Plot to check 
     head(hobo_comp)
@@ -69,7 +69,15 @@ clean_hobo_FUNC <- function(hobo_dat){
       ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check")
     hobo_icebath_check_plot 
     
-# Trim to only the time window you are interested in 
+# Trim to only the time window you are interested in  tz = "EST", 
+    
+    #************************************ 
+    #* Here is were I got to on Monday, just need to trim to the right time window 
+    str(hobo_comp)
+    start_time <- as.POSIXct("2023-02-14 11:00:00", format = "%Y-%m-%d %H:%M")
+    end_time <- as.POSIXct("2023-02-14 13:00:00", format = "%Y-%m-%d %H:%M")
+    hobo_comp_trimmed <- hobo_comp[hobo_comp$Date_Time >= start_time & hobo_comp$Date_Time <= end_time , ]
+    
     
 # Take Average temp and standard deviation of temps for each serial number 
    
