@@ -23,43 +23,55 @@ library(purrr)
 library(ggplot2)
 setwd("~/HolgersonLab_Helpful_Code")
 
-# 2. Read in and format the temperature data from HOBO loggers
+# 1. Read in and format the temperature data from HOBO loggers
 
-# List of all of the hobo files in folder rather than pulling them individually
-# Desktop 
-setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/021423_IceBathCalibrationCheck_KG")
-hobo_file_names <- list.files(pattern="*.xlsx") #Get a list of all of the .xlsx files in the working directory 
-list_of_hobo_tbls <- lapply(hobo_file_names, read_xlsx, skip = 1)   #Read all of the files on that list into the R environment
-list_of_hobo_dfs <- lapply(list_of_hobo_tbls, as.data.frame)
-setwd("~/HolgersonLab_Helpful_Code")
-
-
-hobo_dat <- list_of_hobo_dfs[[4]]
-
-#Make a function to change column names of each HOBO data file and add serial number as a column  
-clean_hobo_FUNC <- function(hobo_dat){
-  names(hobo_dat)[names(hobo_dat) == "Date Time, GMT-05:00"] <- "Date_Time"  #the column name says GMT but I checked the time and it actually on EST 
-  sn_full <- names(hobo_dat)[3]  #This takes the column name of the third column (which contains the serial number of the logger) and saves it as value "sn_full"
-  serial_number <- substring(sn_full, 20, 27)  # This selects only the 20th to 27th character which corresponds to the serial number 
-  names(hobo_dat)[3] <- "Temp_C"
-  hobo_dat$Serial_Number <- serial_number 
-  names(hobo_dat)
-  hobo_dat <- as.data.frame(subset(hobo_dat, select = c("Serial_Number", "Date_Time", "Temp_C")))
-}
-
-#Apply function and make column names consistant 
-    output_clean_hobo_fun <- lapply(list_of_hobo_dfs, clean_hobo_FUNC)
-    head(output_clean_hobo_fun[[6]])
-    lapply(output_clean_hobo_fun, nrow)
+  # List of all of the hobo files in folder rather than pulling them individually
+    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/021423_IceBathCalibrationCheck_KG")
+    hobo_file_names <- list.files(pattern="*.xlsx") #Get a list of all of the .xlsx files in the working directory 
+    list_of_hobo_tbls <- lapply(hobo_file_names, read_xlsx, skip = 1)   #Read all of the files on that list into the R environment
+    list_of_hobo_dfs <- lapply(list_of_hobo_tbls, as.data.frame)
+    setwd("~/HolgersonLab_Helpful_Code")
+  
+      # pull a practice dataset out if the list 
+      hobo_dat <- list_of_hobo_dfs[[4]]
+      
+  # Load dataframe with logger serial numbers and names 
+      logger_names <- read_xlsx("HOBO_temp_light_logger_names.xlsx")
     
-# Bind all dataframes from all loggers into one long df  
+
+
+#2. Format the HOBO data 
+    
+    # Write a function to change column names of each HOBO data file and add serial number as a column  
+    clean_hobo_FUNC <- function(hobo_dat){
+      names(hobo_dat)[names(hobo_dat) == "Date Time, GMT-05:00"] <- "Date_Time"  #the column name says GMT but I checked the time and it actually on EST 
+      sn_full <- names(hobo_dat)[3]  #This takes the column name of the third column (which contains the serial number of the logger) and saves it as value "sn_full"
+      serial_number <- substring(sn_full, 20, 27)  # This selects only the 20th to 27th character which corresponds to the serial number 
+      names(hobo_dat)[3] <- "Temp_C"
+      hobo_dat$Serial_Number <- serial_number 
+      names(hobo_dat)
+      hobo_dat <- as.data.frame(subset(hobo_dat, select = c("Serial_Number", "Date_Time", "Temp_C")))
+    }
+
+    #Apply function and make column names consistant 
+        output_clean_hobo_fun <- lapply(list_of_hobo_dfs, clean_hobo_FUNC)
+    
+    # Check the cleaned output to make sure it looks right and is doing what you think it is
+      head(output_clean_hobo_fun[[6]])  # look at the top of the 6th dataframe 
+      lapply(output_clean_hobo_fun, nrow)  # Get the number of rows in each data frame 
+    
+#3. Bind all dataframes from all loggers into one long df  
     hobo_comp <- bind_rows(output_clean_hobo_fun)
     
+  # Fix serial number for logger that has a serial number with one fewer digit than the others 
+    tally(~Serial_Number, data = hobo_comp)
+    hobo_comp$Serial_Number <- ifelse(hobo_comp$Serial_Number == "9995411,", "9995411", hobo_comp$Serial_Number)
+    
 
-# Remove rows with NAs 
+# 4. Remove rows with NAs 
     hobo_comp <- hobo_comp[!is.na(hobo_comp$Temp_C), ]
    
-# Plot to check 
+# 5. Plot to check 
     head(hobo_comp)
     hobo_icebath_check_plot  <- hobo_comp %>%
       ggplot(aes(x=Date_Time, y = Temp_C)) +
@@ -69,28 +81,35 @@ clean_hobo_FUNC <- function(hobo_dat){
       ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check")
     hobo_icebath_check_plot 
     
-# Trim to only the time window you are interested in  tz = "EST", 
-    
-    #************************************ 
-    #* Here is were I got to on Monday, just need to trim to the right time window 
+
+# 6. Trim to only the time window you are interested in  tz = "EST", 
     str(hobo_comp)
-    start_time <- as.POSIXct("2023-02-14 11:00:00", format = "%Y-%m-%d %H:%M")
-    end_time <- as.POSIXct("2023-02-14 13:00:00", format = "%Y-%m-%d %H:%M")
+    start_time <- as.POSIXct("2023-02-14 11:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M")
+    end_time <- as.POSIXct("2023-02-14 13:00:00", tz = "UTC",format = "%Y-%m-%d %H:%M")
     hobo_comp_trimmed <- hobo_comp[hobo_comp$Date_Time >= start_time & hobo_comp$Date_Time <= end_time , ]
     
     
-# Take Average temp and standard deviation of temps for each serial number 
+# 7. Take Average temp and standard deviation of temps for each serial number 
    
     # Using Base R  
-    aggregate(hobo_comp$Temp_C, list(hobo_comp$Serial_Number), FUN=mean)
+    aggregate(hobo_comp_trimmed$Temp_C, list(hobo_comp_trimmed$Serial_Number), FUN=mean)
     
     # Usign Dplyr 
-    avg_temps_hobo <- hobo_comp %>%
+    avg_temps_hobo <- hobo_comp_trimmed %>%
       group_by(Serial_Number) %>%
-      summarise_at(vars(Temp_C), list(avg_temp = mean, sd_temp = sd))
+      summarise_at(vars(Temp_C), list(avg_ice_bath_temp = mean, sd_ice_bath_temp = sd))
     
-# Save the output as an excel document 
-    #   write_xlsx(avg_temps_hobo, "OutputFiles/hobo_icebathcalib_022123.xlsx")
+# 8. Add logger names 
+    str(logger_names)
+    logger_names$Serial_Number <- as.character(logger_names$Serial_Number)
+    output <- inner_join(avg_temps_hobo, logger_names)
+    
+    head(output)
+    output <- subset(output, select = c("Logger_Name", "Serial_Number", "avg_ice_bath_temp", "sd_ice_bath_temp"))
+    
+    
+# 9. Save the output as an excel document 
+   #    write_xlsx(output, "OutputFiles/hobo_icebathcalib_022123.xlsx")
     
     
     
