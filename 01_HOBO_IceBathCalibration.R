@@ -3,9 +3,7 @@
 #######################
 # Holgerson Lab; Katie Gannon February 2023
 
-# Git Check Hopefully   
-
-# 0. Set Up R Environment
+# 0. Set Up R Environment   
 # ______________________________________________________________________________________________________________________________________________________
 # 0. Set up R Environment 
 library(dplyr)
