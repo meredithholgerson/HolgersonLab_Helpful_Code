@@ -74,7 +74,7 @@ setwd("~/HolgersonLab_Helpful_Code")
    
 # 5. Plot to check 
     head(hobo_comp)
-    hobo_icebath_check_plot  <- hobo_comp %>%
+    hobo_icebath_check_plot  <- hobo_comp_trimmed %>%
       ggplot(aes(x=Date_Time, y = Temp_C)) +
       geom_line(aes(y = Temp_C, color = Serial_Number)) + 
       geom_point(aes(y = Temp_C, color = Serial_Number)) + 
@@ -85,8 +85,8 @@ setwd("~/HolgersonLab_Helpful_Code")
 
 # 6. Trim to only the time window you are interested in  tz = "EST", 
     str(hobo_comp)
-    start_time <- as.POSIXct("2023-02-14 11:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M")
-    end_time <- as.POSIXct("2023-02-14 13:00:00", tz = "UTC",format = "%Y-%m-%d %H:%M")
+    start_time <- as.POSIXct("2023-02-21 10:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M")
+    end_time <- as.POSIXct("2023-02-21 15:00:00", tz = "UTC",format = "%Y-%m-%d %H:%M")
     hobo_comp_trimmed <- hobo_comp[hobo_comp$Date_Time >= start_time & hobo_comp$Date_Time <= end_time , ]
     
     
