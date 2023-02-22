@@ -85,7 +85,7 @@ setwd("~/HolgersonLab_Helpful_Code")
 
 # 6. Trim to only the time window you are interested in  tz = "EST", 
     str(hobo_comp)
-    start_time <- as.POSIXct("2023-02-21 10:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M")
+    start_time <- as.POSIXct("2023-02-21 11:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M")
     end_time <- as.POSIXct("2023-02-21 15:00:00", tz = "UTC",format = "%Y-%m-%d %H:%M")
     hobo_comp_trimmed <- hobo_comp[hobo_comp$Date_Time >= start_time & hobo_comp$Date_Time <= end_time , ]
     
@@ -101,10 +101,12 @@ setwd("~/HolgersonLab_Helpful_Code")
       geom_line(aes(y = Temp_C, color = Logger_Name)) + 
       geom_point(aes(y = Temp_C, color = Logger_Name)) + 
       theme_bw() +
-      ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check")
+      ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check - 022123 RR")
     hobo_icebath_check_plot_trimmed 
     
     # Save plot of trimmed data with logger names 
+    ggsave("OutputFiles/HOBO_IceBath_CalibrationCheck_022123_1802.png", hobo_icebath_check_plot_trimmed, width = 190, height = 120, units = "mm")
+    
     
 # 7. Take Average temp and standard deviation of temps for each serial number 
    
@@ -127,7 +129,8 @@ setwd("~/HolgersonLab_Helpful_Code")
     mean(output$avg_ice_bath_temp)
     
 # 9. Save the output as an excel document 
-   #    write_xlsx(output, "OutputFiles/hobo_icebathcalib_022123.xlsx")
+   #   write_xlsx(output, "OutputFiles/hobo_icebathcalib_022123_1802.xlsx")
+   #   write_xlsx(hobo_comp_trimmed, "OutputFiles/hobo_icebathcalib_rawtemps_long_022123.xlsx")
     
     
     
