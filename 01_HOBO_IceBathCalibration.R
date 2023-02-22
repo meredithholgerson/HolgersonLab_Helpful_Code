@@ -27,7 +27,7 @@ setwd("~/HolgersonLab_Helpful_Code")
 # 1. Read in and format the temperature data from HOBO loggers
 
   # List of all of the hobo files in folder rather than pulling them individually
-    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022123_IceBathCalibrationCheck_KG")
+    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022123_IceBathCalibrationCheck_RR")
     hobo_file_names <- list.files(pattern="*.xlsx") #Get a list of all of the .xlsx files in the working directory 
     list_of_hobo_tbls <- lapply(hobo_file_names, read_xlsx, skip = 1)   #Read all of the files on that list into the R environment
     list_of_hobo_dfs <- lapply(list_of_hobo_tbls, as.data.frame)
