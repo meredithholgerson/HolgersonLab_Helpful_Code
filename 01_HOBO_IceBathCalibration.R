@@ -96,16 +96,16 @@ setwd("~/HolgersonLab_Helpful_Code")
     head(hobo_comp_trimmed)
     
     # Plot again with trimmed data and logger names
-    hobo_icebath_check_plot_trimmed  <- hobo_comp_trimmed %>%
+    hobo_icebath_check_plot_trimmed  <- hobo_comp %>%
       ggplot(aes(x=Date_Time, y = Temp_C)) +
       geom_line(aes(y = Temp_C, color = Logger_Name)) + 
       geom_point(aes(y = Temp_C, color = Logger_Name)) + 
       theme_bw() +
       ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check - 022123 RR")
-    hobo_icebath_check_plot_trimmed 
+    hobo_icebath_check_plot
     
     # Save plot of trimmed data with logger names 
-    ggsave("OutputFiles/HOBO_IceBath_CalibrationCheck_022323.png", hobo_icebath_check_plot_trimmed, width = 190, height = 120, units = "mm")
+    ggsave("OutputFiles/HOBO_IceBath_CalibrationCheck__fulltime_022323.png", hobo_icebath_check_plot, width = 190, height = 120, units = "mm")
     
     
 # 7. Take Average temp and standard deviation of temps for each serial number 
@@ -129,7 +129,7 @@ setwd("~/HolgersonLab_Helpful_Code")
     mean(output$avg_ice_bath_temp)
     
 # 9. Save the output as an excel document 
-      # write_xlsx(output, "OutputFiles/hobo_icebathcalib_022323_1802.xlsx")
+      # write_xlsx(output, "OutputFiles/hobo_icebathcalib_022323.xlsx")
       # write_xlsx(hobo_comp_trimmed, "OutputFiles/hobo_icebathcalib_rawtemps_long_022323.xlsx")
     
     
