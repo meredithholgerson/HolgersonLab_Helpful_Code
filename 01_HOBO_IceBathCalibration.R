@@ -27,7 +27,7 @@ setwd("~/HolgersonLab_Helpful_Code")
 # 1. Read in and format the temperature data from HOBO loggers
 
   # List of all of the hobo files in folder rather than pulling them individually
-    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022123_IceBathCalibrationCheck_RR")
+    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022323_IceBathCalibrationCheck_KG")
     hobo_file_names <- list.files(pattern="*.xlsx") #Get a list of all of the .xlsx files in the working directory 
     list_of_hobo_tbls <- lapply(hobo_file_names, read_xlsx, skip = 1)   #Read all of the files on that list into the R environment
     list_of_hobo_dfs <- lapply(list_of_hobo_tbls, as.data.frame)
@@ -59,7 +59,7 @@ setwd("~/HolgersonLab_Helpful_Code")
     
     # Check the cleaned output to make sure it looks right and is doing what you think it is
       head(output_clean_hobo_fun[[6]])  # look at the top of the 6th dataframe 
-      lapply(output_clean_hobo_fun, nrow)  # Get the number of rows in each data frame 
+      lapply(output_clean_hobo_fun, head)  # Get the number of rows in each data frame 
     
 #3. Bind all dataframes from all loggers into one long df  
     hobo_comp <- bind_rows(output_clean_hobo_fun)
@@ -85,8 +85,8 @@ setwd("~/HolgersonLab_Helpful_Code")
 
 # 6. Trim to only the time window you are interested in  tz = "EST", 
     str(hobo_comp)
-    start_time <- as.POSIXct("2023-02-21 11:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M")
-    end_time <- as.POSIXct("2023-02-21 15:00:00", tz = "UTC",format = "%Y-%m-%d %H:%M")
+    start_time <- as.POSIXct("2023-02-23 10:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M")
+    end_time <- as.POSIXct("2023-02-23 15:00:00", tz = "UTC",format = "%Y-%m-%d %H:%M")
     hobo_comp_trimmed <- hobo_comp[hobo_comp$Date_Time >= start_time & hobo_comp$Date_Time <= end_time , ]
     
     # Add logger names to trimmed data  
@@ -105,7 +105,7 @@ setwd("~/HolgersonLab_Helpful_Code")
     hobo_icebath_check_plot_trimmed 
     
     # Save plot of trimmed data with logger names 
-    ggsave("OutputFiles/HOBO_IceBath_CalibrationCheck_022123_1802.png", hobo_icebath_check_plot_trimmed, width = 190, height = 120, units = "mm")
+    ggsave("OutputFiles/HOBO_IceBath_CalibrationCheck_022323.png", hobo_icebath_check_plot_trimmed, width = 190, height = 120, units = "mm")
     
     
 # 7. Take Average temp and standard deviation of temps for each serial number 
@@ -129,8 +129,8 @@ setwd("~/HolgersonLab_Helpful_Code")
     mean(output$avg_ice_bath_temp)
     
 # 9. Save the output as an excel document 
-   #   write_xlsx(output, "OutputFiles/hobo_icebathcalib_022123_1802.xlsx")
-   #   write_xlsx(hobo_comp_trimmed, "OutputFiles/hobo_icebathcalib_rawtemps_long_022123.xlsx")
+      # write_xlsx(output, "OutputFiles/hobo_icebathcalib_022323_1802.xlsx")
+      # write_xlsx(hobo_comp_trimmed, "OutputFiles/hobo_icebathcalib_rawtemps_long_022323.xlsx")
     
     
     
