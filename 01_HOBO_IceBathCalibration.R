@@ -22,22 +22,27 @@ library(mosaic)
 library(writexl)
 library(purrr)
 library(ggplot2)
-setwd("~/HolgersonLab_Helpful_Code")
+
+# setwd("~/HolgersonLab_Helpful_Code")  #Desktop 
+setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
 
 # 1. Read in and format the temperature data from HOBO loggers
 
   # List of all of the hobo files in folder rather than pulling them individually
-    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022323_IceBathCalibrationCheck_KG")
+    # setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022323_IceBathCalibrationCheck_KG") # Desktop 
+    setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code/HOBO_Data/022323_IceBathCalibrationCheck_KG") # Mac
     hobo_file_names <- list.files(pattern="*.xlsx") #Get a list of all of the .xlsx files in the working directory 
     list_of_hobo_tbls <- lapply(hobo_file_names, read_xlsx, skip = 1)   #Read all of the files on that list into the R environment
     list_of_hobo_dfs <- lapply(list_of_hobo_tbls, as.data.frame)
-    setwd("~/HolgersonLab_Helpful_Code")
+    # setwd("~/HolgersonLab_Helpful_Code") #Desktop
+    setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
   
       # pull a practice dataset out if the list 
       hobo_dat <- list_of_hobo_dfs[[4]]
       
   # Load dataframe with logger serial numbers and names 
       logger_names <- read_xlsx("HOBO_Data/HOBO_temp_light_logger_names.xlsx")
+      pond_placement <- read_xlsx("HOBO_Data/HOBO_example_pond_placement.xlsx")
     
 
 
@@ -63,6 +68,7 @@ setwd("~/HolgersonLab_Helpful_Code")
     
 #3. Bind all dataframes from all loggers into one long df  
     hobo_comp <- bind_rows(output_clean_hobo_fun)
+    head(hobo_comp)
     
   # Fix serial number for logger that has a serial number with one fewer digit than the others 
     tally(~Serial_Number, data = hobo_comp)
@@ -85,9 +91,11 @@ setwd("~/HolgersonLab_Helpful_Code")
 
 # 6. Trim to only the time window you are interested in  tz = "EST", 
     str(hobo_comp)
+    head(hobo_comp)
     start_time <- as.POSIXct("2023-02-23 10:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M")
     end_time <- as.POSIXct("2023-02-23 15:00:00", tz = "UTC",format = "%Y-%m-%d %H:%M")
     hobo_comp_trimmed <- hobo_comp[hobo_comp$Date_Time >= start_time & hobo_comp$Date_Time <= end_time , ]
+    head(hobo_comp_trimmed)
     
     # Add logger names to trimmed data  
     str(logger_names)
@@ -95,14 +103,33 @@ setwd("~/HolgersonLab_Helpful_Code")
     hobo_comp_trimmed <- left_join(hobo_comp_trimmed, logger_names)
     head(hobo_comp_trimmed)
     
+    # Here is where you could do the same thing (use same code above) to add columns for what pond the logger was in and what depth it was at 
+    pond_placement$Logger_Name <- NULL 
+    pond_placement$Serial_Number <- as.character(pond_placement$Serial_Number)
+    hobo_comp_ponds<- left_join(hobo_comp_trimmed, pond_placement)
+    head(hobo_comp_ponds)
+  
+    
     # Plot again with trimmed data and logger names
-    hobo_icebath_check_plot_trimmed  <- hobo_comp %>%
+    hobo_icebath_check_plot_trimmed  <- hobo_comp_trimmed %>%
       ggplot(aes(x=Date_Time, y = Temp_C)) +
       geom_line(aes(y = Temp_C, color = Logger_Name)) + 
       geom_point(aes(y = Temp_C, color = Logger_Name)) + 
       theme_bw() +
       ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check - 022123 RR")
-    hobo_icebath_check_plot
+    hobo_icebath_check_plot_trimmed 
+    
+    # If you wanted to seperate by pond 
+    head(hobo_comp_ponds)
+    hobo_comp_ponds$Depth <- as.factor(hobo_comp_ponds$Depth)
+    str(hobo_comp_ponds)
+    hobo_icebath_check_by_pond  <- hobo_comp_ponds %>%
+      ggplot(aes(x=Date_Time, y = Temp_C)) +
+      geom_line(aes(y = Temp_C, color = Depth)) + 
+      geom_point(aes(y = Temp_C, color = Depth)) + 
+      theme_bw() +
+      ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Example by Ponds")
+    hobo_icebath_check_by_pond + facet_wrap(~Pond)
     
     # Save plot of trimmed data with logger names 
     ggsave("OutputFiles/HOBO_IceBath_CalibrationCheck__fulltime_022323.png", hobo_icebath_check_plot, width = 190, height = 120, units = "mm")
