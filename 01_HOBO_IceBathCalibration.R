@@ -132,7 +132,7 @@ setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
     hobo_icebath_check_by_pond + facet_wrap(~Pond)
     
     # Save plot of trimmed data with logger names 
-    ggsave("OutputFiles/HOBO_IceBath_CalibrationCheck__fulltime_022323.png", hobo_icebath_check_plot, width = 190, height = 120, units = "mm")
+    ggsave("OutputFiles/HOBO_IceBath_CalibrationCheck__fulltime_022723.png", hobo_icebath_check_plot, width = 190, height = 120, units = "mm")
     
     
 # 7. Take Average temp and standard deviation of temps for each serial number 
@@ -145,7 +145,9 @@ setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
       group_by(Serial_Number) %>%
       summarise_at(vars(Temp_C), list(avg_ice_bath_temp = mean, sd_ice_bath_temp = sd))
     
-# 8. Add logger names 
+    #You could use the same above code to get the average temp in all ponds at each depth by changing Serial Number to Depth 
+    
+# 8. Add logger names to the output 
     str(logger_names)
     logger_names$Serial_Number <- as.character(logger_names$Serial_Number)
     output <- inner_join(avg_temps_hobo, logger_names)
