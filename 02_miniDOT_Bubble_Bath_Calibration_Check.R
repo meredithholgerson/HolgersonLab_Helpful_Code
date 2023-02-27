@@ -23,10 +23,12 @@ library(ggplot2)
 #install.packages("ggpmisc") <- try on desktop 
 # library(ggpmisc)
 
-setwd("~/Equipment/miniDOT_Calibration_Check")
+# setwd("~/Equipment/miniDOT_Calibration_Check") # Desktop 
+setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
 
 # 1.  Read in miniDOT data  
-setwd("~/Equipment/miniDOT_Calibration_Check/BubbleBathData_021023") #Reset the working directory to the folder containing just the files that need to be formatted
+# setwd("~/Equipment/miniDOT_Calibration_Check/BubbleBathData_021023") # Desktop - #Reset the working directory to the folder containing just the files that need to be formatted
+setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
 file_names <- list.files(pattern="*.TXT") #Get a list of all of the .txt files in the working directory 
 list_of_miniDOT_SN <- lapply(file_names, read.table, skip = , header = T, sep = ",", fill = TRUE)
 list_of_miniDOT_data <- lapply(file_names, read.table, skip = 6, header = T, sep = ",", fill = TRUE) #this pulls in the data but looses the serial numbers   
