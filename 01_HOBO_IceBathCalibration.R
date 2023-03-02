@@ -148,7 +148,13 @@ library(ggplot2)
        # write_xlsx(output, "OutputFiles/230228_hobo_icebathcalib_Holgerson_Loggers.xlsx")
        # write_xlsx(hobo_comp_trimmed, "OutputFiles/230228_hobo_icebathrawtemps_Holgerson_Loggers.xlsx")
     
-    
-    
-
+# 10. Put together all calibration corrections from multiple days of ice bath 
+    icebath_230223 <- read_xlsx("OutputFiles/230223_hobo_icebathcalib_MLoggers.xlsx")
+    icebath_230228 <- read_xlsx("OutputFiles/230228_hobo_icebathcalib_Holgerson_Loggers.xlsx")
+    head(icebath_230223)    
+    head(icebath_230228)    
+    all_icebaths <- rbind(icebath_230223, icebath_230228)
+    all_icebaths <- subset(all_icebaths, select = c("Logger_Name", "Serial_Number", "avg_ice_bath_temp", "sd_ice_bath_temp"))
+    head(all_icebaths)
+    write_xlsx(all_icebaths, "OutputFiles/230228_Spring2023_Icebathcalibration_HolgersonLoggers.xlsx")
     
