@@ -29,7 +29,7 @@ library(ggplot2)
 # 1. Read in and format the temperature data from HOBO loggers
 
   # List of all of the hobo files in folder rather than pulling them individually
-    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022823_IceBathCalibrationCheck_KG/M-0X") # Desktop 
+    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022823_IceBathCalibrationCheck_KG/Black_00X") # Desktop 
     # setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code/HOBO_Data/022323_IceBathCalibrationCheck_KG") # Mac
     hobo_file_names <- list.files(pattern="*.csv") #Get a list of all of the .xlsx files in the working directory 
     list_of_hobo_tbls <- lapply(hobo_file_names, read_csv, skip = 1)   #Read all of the files on that list into the R environment
@@ -39,6 +39,7 @@ library(ggplot2)
   
       # pull a practice dataset out if the list 
       hobo_dat <- list_of_hobo_dfs[[4]]
+      head(hobo_dat)
       
   # Load dataframe with logger serial numbers and names 
       logger_names_M <- read_xlsx("HOBO_Data/HOBO_temp_light_logger_names.xlsx")
@@ -62,7 +63,7 @@ library(ggplot2)
         output_clean_hobo_fun <- lapply(list_of_hobo_dfs, clean_hobo_FUNC)
     
     # Check the cleaned output to make sure it looks right and is doing what you think it is
-      head(output_clean_hobo_fun[[6]])  # look at the top of the 6th dataframe 
+      head(output_clean_hobo_fun[[3]])  # look at the top of the 6th dataframe 
       lapply(output_clean_hobo_fun, head)  # Get the number of rows in each data frame 
     
 #3. Bind all dataframes from all loggers into one long df  
@@ -108,13 +109,24 @@ library(ggplot2)
     head(hobo_comp_trimmed)
     
     # Add logger names to trimmed data  
-    str(logger_names_T)
-    logger_names_M$Serial_Number <- as.character(logger_names_M$Serial_Number)
-    hobo_comp_trimmed <- left_join(hobo_comp_trimmed, logger_names_M)
+    str(logger_names_B)
+    logger_names_B$Serial_Number <- as.character(logger_names_B$Serial_Number)
+    str(hobo_comp_trimmed)
+    hobo_comp_trimmed <- left_join(hobo_comp_trimmed, logger_names_B)
     head(hobo_comp_trimmed)
     
+    # Intersect lists 
+        A <- seq(1,8)
+        B <- seq(4,11)
+        intersect(A, B)
+        
+        data_names <- hobo_comp_trimmed$Serial_Number[!duplicated(hobo_comp_trimmed$Serial_Number)]
+        logger_names <- logger_names_B$Serial_Number[!duplicated(logger_names_B$Serial_Number)]
+        intersect(data_names, logger_names)
+        
     # Change column names to standard 
-    names(hobo_comp_trimmed)[names(hobo_comp_trimmed) == "Temp_only_logger_name"] <- "Logger_Name"
+    names(hobo_comp_trimmed)[names(hobo_comp_trimmed) == "Temp_ProV2_Logger_Name"] <- "Logger_Name"
+    head(hobo_comp_trimmed)
     
     # Here is where you could do the same thing (use same code above) to add columns for what pond the logger was in and what depth it was at 
         # pond_placement$Logger_Name <- NULL 
@@ -129,7 +141,7 @@ library(ggplot2)
       geom_line(aes(y = Temp_C, color = Logger_Name)) + 
       geom_point(aes(y = Temp_C, color = Logger_Name)) + 
       theme_bw() +
-      ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check (M Loggers) - 022823 RR")
+      ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check (B Loggers) - 022823 RR")
     hobo_icebath_check_plot_trimmed 
     
     head(hobo_comp_trimmed)
@@ -147,7 +159,7 @@ library(ggplot2)
        # hobo_icebath_check_by_pond + facet_wrap(~Pond)
     
     # Save plot of trimmed data with logger names 
-    ggsave("OutputFiles/230228_hobo_icebathcalib_MLoggers.png", hobo_icebath_check_plot_trimmed, width = 190, height = 120, units = "mm")
+    ggsave("OutputFiles/230228_hobo_icebathcalib_BLoggers.png", hobo_icebath_check_plot_trimmed, width = 190, height = 120, units = "mm")
     
     
 # 7. Take Average temp and standard deviation of temps for each serial number 
@@ -164,10 +176,10 @@ library(ggplot2)
     
 # 8. Add logger names to the output 
     str(logger_names)
-    logger_names_M$Serial_Number <- as.character(logger_names_M$Serial_Number)
-    output <- inner_join(avg_temps_hobo, logger_names_M)
+    logger_names_B$Serial_Number <- as.character(logger_names_B$Serial_Number)
+    output <- inner_join(avg_temps_hobo, logger_names_B)
     head(output)
-    # names(output)[names(output) == "Temp_only_logger_name"] <- "Logger_Name"
+    names(output)[names(output) == "Temp_ProV2_Logger_Name"] <- "Logger_Name"
     
     head(output)
     output <- subset(output, select = c("Logger_Name", "Serial_Number", "avg_ice_bath_temp", "sd_ice_bath_temp"))
@@ -180,8 +192,8 @@ library(ggplot2)
     hobo_comp_trimmed$Date_Time <- as.character(hobo_comp_trimmed$Date_Time)
     head(hobo_comp_trimmed)
     
-       # write_xlsx(output, "OutputFiles/230228_hobo_icebathcalib_MLoggers.xlsx")
-       # write_xlsx(hobo_comp_trimmed, "OutputFiles/230228_hobo_icebathrawtemps_MLoggers.xlsx")
+       # write_xlsx(output, "OutputFiles/230228_hobo_icebathcalib_BLoggers.xlsx")
+       # write_xlsx(hobo_comp_trimmed, "OutputFiles/230228_hobo_icebathrawtemps_BLoggers.xlsx")
     
     
     
