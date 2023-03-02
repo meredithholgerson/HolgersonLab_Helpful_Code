@@ -29,7 +29,7 @@ library(ggplot2)
 # 1. Read in and format the temperature data from HOBO loggers
 
   # List of all of the hobo files in folder rather than pulling them individually
-    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022823_IceBathCalibrationCheck_KG/T-0X") # Desktop 
+    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022823_IceBathCalibrationCheck_KG/M-0X") # Desktop 
     # setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code/HOBO_Data/022323_IceBathCalibrationCheck_KG") # Mac
     hobo_file_names <- list.files(pattern="*.csv") #Get a list of all of the .xlsx files in the working directory 
     list_of_hobo_tbls <- lapply(hobo_file_names, read_csv, skip = 1)   #Read all of the files on that list into the R environment
@@ -109,8 +109,8 @@ library(ggplot2)
     
     # Add logger names to trimmed data  
     str(logger_names_T)
-    logger_names_T$Serial_Number <- as.character(logger_names_T$Serial_Number)
-    hobo_comp_trimmed <- left_join(hobo_comp_trimmed, logger_names_T)
+    logger_names_M$Serial_Number <- as.character(logger_names_M$Serial_Number)
+    hobo_comp_trimmed <- left_join(hobo_comp_trimmed, logger_names_M)
     head(hobo_comp_trimmed)
     
     # Change column names to standard 
@@ -129,7 +129,7 @@ library(ggplot2)
       geom_line(aes(y = Temp_C, color = Logger_Name)) + 
       geom_point(aes(y = Temp_C, color = Logger_Name)) + 
       theme_bw() +
-      ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check (T Loggers) - 022823 RR")
+      ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check (M Loggers) - 022823 RR")
     hobo_icebath_check_plot_trimmed 
     
     head(hobo_comp_trimmed)
@@ -147,7 +147,7 @@ library(ggplot2)
        # hobo_icebath_check_by_pond + facet_wrap(~Pond)
     
     # Save plot of trimmed data with logger names 
-    ggsave("OutputFiles/HOBO_IceBath_CalibrationCheck__022823_TLoggers.png", hobo_icebath_check_plot_trimmed, width = 190, height = 120, units = "mm")
+    ggsave("OutputFiles/230228_hobo_icebathcalib_MLoggers.png", hobo_icebath_check_plot_trimmed, width = 190, height = 120, units = "mm")
     
     
 # 7. Take Average temp and standard deviation of temps for each serial number 
@@ -164,9 +164,10 @@ library(ggplot2)
     
 # 8. Add logger names to the output 
     str(logger_names)
-    logger_names_T$Serial_Number <- as.character(logger_names_T$Serial_Number)
-    output <- inner_join(avg_temps_hobo, logger_names_T)
-    names(output)[names(output) == "Temp_only_logger_name"] <- "Logger_Name"
+    logger_names_M$Serial_Number <- as.character(logger_names_M$Serial_Number)
+    output <- inner_join(avg_temps_hobo, logger_names_M)
+    head(output)
+    # names(output)[names(output) == "Temp_only_logger_name"] <- "Logger_Name"
     
     head(output)
     output <- subset(output, select = c("Logger_Name", "Serial_Number", "avg_ice_bath_temp", "sd_ice_bath_temp"))
@@ -179,8 +180,8 @@ library(ggplot2)
     hobo_comp_trimmed$Date_Time <- as.character(hobo_comp_trimmed$Date_Time)
     head(hobo_comp_trimmed)
     
-       # write_xlsx(output, "OutputFiles/230228_hobo_icebathcalib_TLoggers.xlsx")
-       # write_xlsx(hobo_comp_trimmed, "OutputFiles/230228_hobo_icebathrawtemps_TLoggers.xlsx")
+       # write_xlsx(output, "OutputFiles/230228_hobo_icebathcalib_MLoggers.xlsx")
+       # write_xlsx(hobo_comp_trimmed, "OutputFiles/230228_hobo_icebathrawtemps_MLoggers.xlsx")
     
     
     
