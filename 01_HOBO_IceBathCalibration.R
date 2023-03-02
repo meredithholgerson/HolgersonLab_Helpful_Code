@@ -23,15 +23,15 @@ library(writexl)
 library(purrr)
 library(ggplot2)
 
-# setwd("~/HolgersonLab_Helpful_Code")  #Desktop 
-setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
+ setwd("~/HolgersonLab_Helpful_Code")  #Desktop 
+# setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
 
 # 1. Read in and format the temperature data from HOBO loggers
 
   # List of all of the hobo files in folder rather than pulling them individually
-    # setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022323_IceBathCalibrationCheck_KG") # Desktop 
-    setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code/HOBO_Data/022323_IceBathCalibrationCheck_KG") # Mac
-    hobo_file_names <- list.files(pattern="*.xlsx") #Get a list of all of the .xlsx files in the working directory 
+    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022823_IceBathCalibrationCheck_KG/M-0X") # Desktop 
+    # setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code/HOBO_Data/022323_IceBathCalibrationCheck_KG") # Mac
+    hobo_file_names <- list.files(pattern="*.csv") #Get a list of all of the .xlsx files in the working directory 
     list_of_hobo_tbls <- lapply(hobo_file_names, read_xlsx, skip = 1)   #Read all of the files on that list into the R environment
     list_of_hobo_dfs <- lapply(list_of_hobo_tbls, as.data.frame)
     # setwd("~/HolgersonLab_Helpful_Code") #Desktop
