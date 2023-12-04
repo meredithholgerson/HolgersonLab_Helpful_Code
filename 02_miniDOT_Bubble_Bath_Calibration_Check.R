@@ -23,16 +23,16 @@ library(ggplot2)
 #install.packages("ggpmisc") <- try on desktop 
 # library(ggpmisc)
 
-# setwd("~/Equipment/miniDOT_Calibration_Check") # Desktop 
-setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
+setwd("~/HolgersonLab_Helpful_Code")# Desktop 
+# setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
 
 # 1.  Read in miniDOT data  
-# setwd("~/Equipment/miniDOT_Calibration_Check/BubbleBathData_021023") # Desktop - #Reset the working directory to the folder containing just the files that need to be formatted
-setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
+setwd("~/HolgersonLab_Helpful_Code/miniDOT_Data/021223_BubbleBath_Check_KG") # Desktop - #Reset the working directory to the folder containing just the files that need to be formatted
+# setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code") # Mac
 file_names <- list.files(pattern="*.TXT") #Get a list of all of the .txt files in the working directory 
 list_of_miniDOT_SN <- lapply(file_names, read.table, skip = , header = T, sep = ",", fill = TRUE)
 list_of_miniDOT_data <- lapply(file_names, read.table, skip = 6, header = T, sep = ",", fill = TRUE) #this pulls in the data but looses the serial numbers   
-setwd("~/Equipment/miniDOT_Calibration_Check")    # Reset the working directory to the base 
+setwd("~/HolgersonLab_Helpful_Code")    # Reset the working directory to the base 
 
 # 2.  Formatt each dataframe of miniDOT data 
 
@@ -146,7 +146,7 @@ str(miniDOT_data)
 # 5. Trim to only the time window that you are interested in 
 
 # Round 1 
-# round1_SNs <- c("7392-941101", "7392-094016", "7392-149054", "7392-591332", "7450-913951", "7450-917361", "7450-960183", "7450-981145", "7392-936968","7450-919756", "7450-000560", "7450-654299", "7450-542721", "7450-543142")
+round1_SNs <- c("7392-941101", "7392-094016", "7392-149054", "7392-591332", "7450-913951", "7450-917361", "7450-960183", "7450-981145", "7392-936968","7450-919756", "7450-000560", "7450-654299", "7450-542721", "7450-543142")
 miniDOT_data_r1 <- miniDOT_data[miniDOT_data$Serial_Number %in% round1_SNs , ]
 start_time_r1 <- as.POSIXct("2023-02-09 15:00:00", tz = "EST", format = "%Y-%m-%d %H:%M")
 end_time_r1 <- as.POSIXct("2023-02-10 08:45:00", tz = "EST", format = "%Y-%m-%d %H:%M")
@@ -186,4 +186,4 @@ miniDOT_calibration_check_plot2
 setwd("~/Equipment/miniDOT_Calibration_Check/Output_Figures")
 
 ggsave("Calibration_Check_Plot_R1_Holgerson_and_Alex.png", miniDOT_calibration_check_plot1, width = 190, height = 120, units = "mm")
-ggsave("Calibration_Check_Plot_R2_Sheel.png", miniDOT_calibration_check_plot2, width = 190, height = 120, units = "mm")
+ggsave("~/HolgersonLab_Helpful_Code/Output_Figures/Calibration_Check_Plot_R2_Sheel.png", miniDOT_calibration_check_plot2, width = 190, height = 120, units = "mm")
