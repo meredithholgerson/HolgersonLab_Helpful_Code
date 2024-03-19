@@ -171,7 +171,7 @@
     
 # Remove sensor that looks nutso 
     miniDOT_data_sub <- miniDOT_data_trimmed[miniDOT_data_trimmed$Logger_Name != "Sheel-7", ]
-
+    miniDOT_data_sub <- miniDOT_data_sub[miniDOT_data_sub $Logger_Name != "mini14", ]
 
 # 6. Plot DO over time for the desired interval 
 
