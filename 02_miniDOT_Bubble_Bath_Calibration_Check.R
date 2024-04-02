@@ -160,13 +160,13 @@
     # Round 1 
     # round1_SNs <- c("7392-941101", "7392-094016", "7392-149054", "7392-591332", "7450-913951", "7450-917361", "7450-960183", "7450-981145", "7392-936968","7450-919756", "7450-000560", "7450-654299", "7450-542721", "7450-543142")
     # miniDOT_data_r1 <- miniDOT_data[miniDOT_data$Serial_Number %in% round1_SNs , ]
-    start_time <- as.POSIXct("2024-03-06 13:00:00", tz = "EST", format = "%Y-%m-%d %H:%M")
+    start_time <- as.POSIXct("2024-03-06 14:30:00", tz = "EST", format = "%Y-%m-%d %H:%M")
     end_time <- as.POSIXct("2024-03-06 18:00:00", tz = "EST", format = "%Y-%m-%d %H:%M")
     miniDOT_data_trimmed <- miniDOT_data[miniDOT_data$Date_Time >= start_time & miniDOT_data$Date_Time <= end_time , ]
 
     #Add Logger Names 
     miniDOT_data_trimmed <- left_join(miniDOT_data_trimmed, logger_names)
-    head(check)
+    miniDOT_data_trimmed
     tally(~Serial_Number, data = check)
     
 # Remove sensor that looks nutso 
@@ -181,15 +181,14 @@ miniDOT_calibration_check_plot  <- miniDOT_data_sub %>%
   geom_line(aes(y = DOSat_per, color = Logger_Name)) + 
   geom_point(aes(y = DOSat_per, color = Logger_Name)) + 
   theme_bw() +
-  ylab("Dissolved Oxygen Saturation (%)") + xlab("Time") + ggtitle("miniDOT Bubble Bath")
+  ylab("Dissolved Oxygen Saturation (%)") + xlab("Time") + ggtitle("miniDOT Bubble Bath -- 06 March 2024 KG")
 miniDOT_calibration_check_plot
 
 
 
 
 # 7. Save Output 
-?ggsave()
-setwd("~/Equipment/miniDOT_Calibration_Check/Output_Figures")
-
-ggsave("Calibration_Check_Plot_R1_Holgerson_and_Alex.png", miniDOT_calibration_check_plot1, width = 190, height = 120, units = "mm")
-ggsave("~/HolgersonLab_Helpful_Code/Output_Figures/Calibration_Check_Plot_R2_Sheel.png", miniDOT_calibration_check_plot2, width = 190, height = 120, units = "mm")
+    miniDOT_data_trimmed$Date_Time <- as.character(miniDOT_data_trimmed$Date_Time) # save datetime as a character so that it can pass into excel
+    # write_xlsx(miniDOT_data_trimmed, "OutputFiles/2024_miniDOT_Bubble_Bath/06March2024_BubbleBath_DO_Data.xlsx")
+    ggsave("OutputFiles/2024_miniDOT_Bubble_Bath/06March2024_BubbleBath_DO_Plot.png", miniDOT_calibration_check_plot, width = 190, height = 120, units = "mm")
+    
