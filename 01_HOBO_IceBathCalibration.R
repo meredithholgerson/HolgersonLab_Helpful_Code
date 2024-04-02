@@ -29,7 +29,7 @@ library(ggplot2)
 # 1. Read in and format the temperature data from HOBO loggers
 
   # List of all of the hobo files in folder rather than pulling them individually
-    setwd("~/HolgersonLab_Helpful_Code/HOBO_Data/022823_IceBathCalibrationCheck_KG_Compiled") # Desktop 
+     setwd("~/Lab_Manager/Data_Offload/HOBO/2023_March_IceBath_CalibrationCheck") # Desktop 
     # setwd("~/OneDrive/Holgerson_Lab/HolgersonLab_Helpful_Code/HOBO_Data/022323_IceBathCalibrationCheck_KG") # Mac
     hobo_file_names <- list.files(pattern="*.csv") #Get a list of all of the .xlsx files in the working directory 
     list_of_hobo_tbls <- lapply(hobo_file_names, read_csv, skip = 1)   #Read all of the files on that list into the R environment
@@ -45,13 +45,14 @@ library(ggplot2)
       # logger_names_M <- read_xlsx("HOBO_Data/HOBO_temp_light_logger_names.xlsx")
       # logger_names_T <- read_xlsx("HOBO_Data/HOBO_temp_only_logger_names.xlsx")
       # logger_names_B <- read_xlsx("HOBO_Data/HOBO_tempProV2_logger_names.xlsx")
-      logger_names <- read_xlsx("HOBO_Data/Holgerson_Lab_HOBO_Logger_Names.xlsx")
+      logger_names <- read_xlsx("HOBO_Data/Holgerson_Lab_HOBO_Logger_Names_02March2024.xlsx")
       
 #2. Format the HOBO data 
     
     # Write a function to change column names of each HOBO data file and add serial number as a column  
     clean_hobo_FUNC <- function(hobo_dat){
       names(hobo_dat)[names(hobo_dat) == "Date Time, GMT-05:00"] <- "Date_Time"  #the column name says GMT but I checked the time and it actually on EST 
+      names(hobo_dat)[names(hobo_dat) == "Date Time, GMT-04:00"] <- "Date_Time"  #the column name says GMT but I checked the time and it actually on EST 
       sn_full <- names(hobo_dat)[3]  #This takes the column name of the third column (which contains the serial number of the logger) and saves it as value "sn_full"
       serial_number <- substring(sn_full, 20, 27)  # This selects only the 20th to 27th character which corresponds to the serial number 
       names(hobo_dat)[3] <- "Temp_C"
@@ -92,8 +93,8 @@ library(ggplot2)
     head(hobo_comp)
     min(hobo_comp$Date_Time)
     max(hobo_comp$Date_Time)
-    start_time <- as.POSIXct("0023-02-28 11:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M:%OS")
-    end_time <- as.POSIXct("0023-02-28 17:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M:%OS")
+    start_time <- as.POSIXct("0024-03-15 11:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M:%OS")
+    end_time <- as.POSIXct("0024-03-15 17:00:00", tz = "UTC", format = "%Y-%m-%d %H:%M:%OS")
     hobo_comp_trimmed <- hobo_comp[hobo_comp$Date_Time >= start_time & hobo_comp$Date_Time <= end_time , ]
     head(hobo_comp_trimmed)
     
@@ -102,7 +103,6 @@ library(ggplot2)
     logger_names$Serial_Number <- as.character(logger_names$Serial_Number)
     hobo_comp_trimmed <- left_join(hobo_comp_trimmed, logger_names)
     head(hobo_comp_trimmed)
-  
     
 # 6. Plot to check with trimmed data and logger names
     hobo_icebath_check_plot_trimmed  <- hobo_comp_trimmed %>%
@@ -110,11 +110,11 @@ library(ggplot2)
       geom_line(aes(y = Temp_C, color = Logger_Name)) + 
       geom_point(aes(y = Temp_C, color = Logger_Name)) + 
       theme_bw() +
-      ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check - 022823 RR")
+      ylab("Temperature (C)") + xlab("Time") + ggtitle("HOBO Ice Bath Calibration Check - 15 March 2024 KG")
     hobo_icebath_check_plot_trimmed 
     
     # Save plot of trimmed data with logger names 
-    ggsave("OutputFiles/230228_hobo_icebathcalib_Holgerson_Loggers.png", hobo_icebath_check_plot_trimmed, width = 190, height = 120, units = "mm")
+    # ggsave("OutputFiles/2024_HOBO_Ice_Bath/15March2024_IceBath_Temp_Plot.png", hobo_icebath_check_plot_trimmed, width = 190, height = 120, units = "mm")
     
     
 # 7. Take Average temp and standard deviation of temps for each serial number 
@@ -144,9 +144,12 @@ library(ggplot2)
     # Change date time to a character so that it can pass into an excel file 
     hobo_comp_trimmed$Date_Time <- as.character(hobo_comp_trimmed$Date_Time)
     head(hobo_comp_trimmed)
+    str(hobo_comp_trimmed)
     
-       # write_xlsx(output, "OutputFiles/230228_hobo_icebathcalib_Holgerson_Loggers.xlsx")
-       # write_xlsx(hobo_comp_trimmed, "OutputFiles/230228_hobo_icebathrawtemps_Holgerson_Loggers.xlsx")
+    # Save Temp Data 
+    write_xlsx(hobo_comp_trimmed, "OutputFiles/2024_HOBO_Ice_Bath/15March2024_IceBath_Temp_Data.xlsx")
+    write_xlsx(output, "OutputFiles/2024_HOBO_Ice_Bath/15March2024_IceBath_Temp_Corrections.xlsx")
+
     
 # 10. Put together all calibration corrections from multiple days of ice bath 
     icebath_230223 <- read_xlsx("OutputFiles/230223_hobo_icebathcalib_MLoggers.xlsx")
