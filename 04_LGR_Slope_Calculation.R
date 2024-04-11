@@ -223,4 +223,146 @@
       head(LGR_lst_placement_trimmed[["Pond208_2023-04-19_R2"]]) # Check 
       
 # ________________________________________________________________________________________________
-##### 3) Trim: Bubbles and Disturbance   ####        
+##### 3) Trim: Bubbles and Disturbance   ####    
+# Remove bubble events and any disturbance of placing or removing the chamber
+# If you have already set your trimming windows then you do not need to re-run this step 
+      
+      # 3.1 Make Output File    
+      # Make an output file with a list of all of the runs where you can annotate 
+      
+      # write a function to pull the first entry in the ID column 
+      ExtractID_FUNC <- function(df){
+        Run_ID <- df[1, "ID"]
+        Run_ID
+      }
+      
+      #Check that function works 
+      test_df <- LGR_lst[[14]]
+      head(test_df)
+      ExtractID_FUNC(test_df)
+      
+      
+      # Apply that function across the full list of dataframes, format and save the output 
+      IDs_in_order <- lapply(LGR_lst, ExtractID_FUNC)
+      df <- data.frame(unlist(IDs_in_order))
+      head(df)
+      names(df)[names(df) == "unlist.IDs_in_order."] <- "Run_ID"
+      head(df)
+      num_of_rows <- nrow(df)
+      df$Number <- seq(1:num_of_rows)
+      df_of_run_IDs <- as.data.frame(subset(df, select = c("Number", "Run_ID")))
+      names(df_of_run_IDs)[names(df_of_run_IDs) == "Run_ID"] <- "ID"
+      head(df_of_run_IDs)
+      
+      # Add Placement Delay
+      df_of_placement_times <- subset(chamber_meas, select = c("ID", "Placement_Delay", "Chamber_Removed"))
+      df_to_annotate <- left_join(df_of_run_IDs,df_of_placement_times)
+      head(df_to_annotate)
+      
+      # Save as an output file to use to annotate 
+      df_to_annotate <- as.data.frame(df_to_annotate)
+      # write_xlsx(df_to_annotate, "~/Lab_Manager/Data_Offload/Atkinson_Aerator/IDs_to_annotate_11April2024.xlsx")
+      
+      
+      # 3.2 Plot CO2      
+      
+      # Write a function to create CO2 plots 
+      PlotCO2_FUNC <- function(df){
+        
+        #Calculate R2 
+        lmCO2 <- lm(CO2_d_ppm ~ Time, data = df) #Linear Regression of CH4 concentration over time 
+        CO2_R2 <- summary(lmCO2)$r.squared   #pull the R^2 of the regression line and save to a variable
+        CO2_pvalue <- summary(lmCO2)$coefficients[2,4]   #pull the p-value of the regression line and save to a variable
+        
+        #Save ID as a variable 
+        Run_ID <- df[1, "ID"]
+        
+        #Plot
+        df %>%
+          ggplot(aes(x=Time, y = CO2_d_ppm)) +
+          geom_line(aes(y = CO2_d_ppm), color = "steelblue") + 
+          geom_point(aes(y = CO2_d_ppm), color = "steelblue") + 
+          theme_bw() +
+          annotate(geom = 'text', label = paste("R2=", round(CO2_R2, 4), "   ", "P-value =", round(CO2_pvalue, 7), sep = " "), x = -Inf, y = Inf, hjust = 0, vjust = 1) + 
+          ylab("CO2 (ppm)") + xlab("Time") + ggtitle(paste(Run_ID, "(CO2)", sep = " "))
+      }
+      
+      # Check that the function works 
+      practice_plot <- LGR_lst_placement_trimmed[[4]]
+      PlotCO2_FUNC(practice_plot)   
+      
+      # Apply the plotting function across all of your data frames and view the plots  par(ask = TRUE)  
+      CO2Plots_lst <- lapply(LGR_lst_placement_trimmed, PlotCO2_FUNC)
+      CO2Plots_lst[[13]]
+      CO2Plots_lst[["TXH_SS_ALP_R2_Col3"]]
+      
+      # You can also check the full plot (not placement trimmed if that helps with context )
+      CO2Plots_lst_NOT_trimmed <- lapply(LGR_lst, PlotCO2_FUNC)
+      CO2Plots_lst_NOT_trimmed[[13]]
+      
+      
+      #3.3 Plot CH4            
+      
+      # Write a function to create the CH4 plots 
+      PlotCH4_FUNC <- function(df){
+        
+        #Calculate R2 
+        lmCH4 <- lm(CH4_d_ppm ~ Time, data = df) #Linear Regression of CH4 concentration over time 
+        CH4_R2 <- summary(lmCH4)$r.squared   #pull the R^2 of the regression line and save to a variable
+        CH4_pvalue <- summary(lmCH4)$coefficients[2,4] # Pull p-value 
+        
+        #Save ID as a variable 
+        Run_ID <- df[1, "ID"]
+        
+        #Plot
+        CH4_Plot <- df %>%
+          ggplot(aes(x=Time, y = CH4_d_ppm)) +
+          geom_line(aes(y = CH4_d_ppm), color = "maroon") + 
+          geom_point(aes(y = CH4_d_ppm), color = "maroon") + 
+          theme_bw() +
+          annotate(geom = 'text', label = paste("R2=", round(CH4_R2, 4), "    P-value =", round(CH4_pvalue, 4), sep = " "), x = -Inf, y = Inf, hjust = 0, vjust = 1) + 
+          ylab("CH4 (ppm)") + xlab("Time") + ggtitle(paste(Run_ID, "(CH4)", sep = " "))
+        CH4_Plot 
+      }
+      
+          # Check that the function works 
+          practice_plot <- LGR_lst_placement_trimmed[[14]]
+          PlotCH4_FUNC(practice_plot)
+      
+      # Apply the plotting function across all of your data frames and view the plots   
+      CH4Plots_lst <- lapply(LGR_lst_placement_trimmed, PlotCH4_FUNC)
+      CH4Plots_lst[[14]]
+      
+          # You can also check the full plot (not placement trimmed if that helps with context )
+          CH4Plots_lst_NOT_trimmed <- lapply(LGR_lst, PlotCH4_FUNC)
+          CH4Plots_lst_NOT_trimmed[[14]]
+      
+      
+      # 3.4 Trim LGR Files based on annotations from bubbles and disturbance   
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
