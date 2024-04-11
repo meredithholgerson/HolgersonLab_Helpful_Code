@@ -30,13 +30,12 @@
 # Load Data 
 
       # Chamber Measurements 
-      chamber_meas <- read_xlsx("~/Lab_Manager/Data_Offload/Atkinson_Aerator/LGR_Field_Data.xlsx") #updated chamber meas with start times to match LGR files and not loose data 
+      chamber_meas <- read_xlsx("~/Lab_Manager/Data_Offload/Atkinson_Aerator/LGR_Field_Data_11April2024.xlsx") #updated chamber meas with start times to match LGR files and not loose data 
       chamber_meas <- as.data.frame(chamber_meas)   
       head(chamber_meas)   
       str(chamber_meas)
-      chamber_meas$ID <- ifelse(chamber_meas$Pond == "air", paste("Air_", chamber_meas$Date_txt, sep = ""), 
-        paste("Pond", chamber_meas$Pond, "_", chamber_meas$Date_txt, "_R", chamber_meas$Rep, sep =""))
       
+        
       # Annotation Notes 
       
 
@@ -50,9 +49,36 @@
 
 
 # ________________________________________________________________________________________________
-##### 1) Formatt: LGR Data   #### 
+##### 1) Format Data   #### 
       
-      # 1.1 Format column names of Raw LGR Files to format in R ________________
+      # 1.1 Format Chamber Measurement Data  ________________
+        #Remove Rows for runs with no saved TXT file 
+        chamber_meas <- chamber_meas[chamber_meas$Txt_File == "Good", ]  
+        
+        # Add Run ID 
+        chamber_meas$ID <- ifelse(chamber_meas$Pond == "air", paste("Air_", chamber_meas$Date, sep = ""), 
+                                  paste("Pond", chamber_meas$Pond, "_", chamber_meas$Date, "_R", chamber_meas$Rep, sep =""))
+        
+        #Format Times as date-times 
+        chamber_meas$Date <- as.character(chamber_meas$Date)
+        chamber_meas$Launch_Time <- as.character(chamber_meas$Launch_Time)
+        chamber_meas$Launch_Time <- paste(chamber_meas$Date, chamber_meas$Launch_Time, sep = " ")
+        chamber_meas$Launch_Time <- as.POSIXct(chamber_meas$Launch_Time, tz = "UTC", format = "%Y-%m-%d %H:%M")
+        
+        chamber_meas$Placement_Time <- as.character(chamber_meas$Placement_Time)
+        chamber_meas$Placement_Time <- paste(chamber_meas$Date, chamber_meas$Placement_Time, sep = " ")
+        chamber_meas$Placement_Time <- as.POSIXct(chamber_meas$Placement_Time, tz = "UTC", format = "%Y-%m-%d %H:%M")
+        
+        chamber_meas$End_Time <- as.character(chamber_meas$End_Time)
+        chamber_meas$End_Time <- paste(chamber_meas$Date, chamber_meas$End_Time, sep = " ")
+        chamber_meas$End_Time <- as.POSIXct(chamber_meas$End_Time, tz = "UTC", format = "%Y-%m-%d %H:%M")
+        
+        #Subset to only the columns that you need
+        chamber_meas <- subset(chamber_meas, select = c("ID", "Date", "Analyzer_Type", "Chamber_Type", "Pond", 
+                                                        "Rep", "Launch_Time", "Placement_Time", "End_Time"))
+      
+      
+      # 1.2 Format column names of Raw LGR Files to format in R ________________
       Format_raw_LGR_FUNC <- function(dirty_raw_data){
         names(dirty_raw_data)[names(dirty_raw_data) == "Time"] <- "Date_Time"    #Fix/Format column names
         names(dirty_raw_data)[names(dirty_raw_data) == "X.CH4._ppm"] <- "CH4_ppm"
@@ -75,7 +101,7 @@
       clean_LGR_lst <- lapply(raw_LGR_lst, Format_raw_LGR_FUNC)
       head(clean_LGR_lst[[27]])
       
-      # 1.2 Format Time 
+      # 1.3 Format Time 
       FormattTime_FUNC <- function(conc_data){
         
         # Make a time column that is simply the number of second from the start of the run 
@@ -101,30 +127,36 @@
       # Apply the time formatting function to the list of cleaned LGR data
       clean_time_LGR_lst <- lapply(clean_LGR_lst, FormattTime_FUNC)
       
-#### Start here next time, add ID Column 
+# Start here next time, add ID Column
       
-      # 1.3 Add ID as a column 
+          # Data to check function 
+            conc_df <- (clean_time_LGR_lst[[6]])
+            head(chamber_meas)
+      
+      # 1.4 Add ID as a column 
       AddID_FUNC <- function(conc_df, chamber_meas){
         conc_df$Date_Time <- as.character(conc_df$Date_Time)
-        chamber_meas$Launch_Time_LGR <- as.character(chamber_meas$Launch_Time_LGR)
+        chamber_meas$Launch_Time <- as.character(chamber_meas$Launch_Time)
         start_time <- conc_df[1, "Date_Time"]
-        start_ID <- chamber_meas[chamber_meas$Launch_Time_LGR == start_time , ]
+        start_ID <- chamber_meas[chamber_meas$Launch_Time == start_time , ]
         length_of_start_ID <- nrow(start_ID)
-        ID <- start_ID[1, "Run_ID"]
+        ID <- start_ID[1, "ID"]
         ID
-        conc_df$ID <- ifelse(length_of_start_ID == 0 , "Air", ID) # Name air if they don't have a corresponding ID from Cham Meas
+        conc_df$ID <- ifelse(length_of_start_ID == 0 , "NA", ID) # Name air if they don't have a corresponding ID from Cham Meas
         conc_df <- as.data.frame(conc_df)
       }
       
-      # Check function 
-      practice_conc_df <- clean_time_LGR_lst[[43]]
-      conc_df <- AddID_FUNC(conc_df = practice_conc_df, chamber_meas = chamber_meas)  # This fucntion works to pull the correct ID and add it as a column to the df
-      head(conc_df)
+          # Check function 
+          practice_conc_df <- clean_time_LGR_lst[[43]]
+          conc_df <- AddID_FUNC(conc_df = practice_conc_df, chamber_meas = chamber_meas)  # This fucntion works to pull the correct ID and add it as a column to the df
+          head(conc_df)
       
       # Apply the AddID function across all of the concentration 
       clean_time_names_LGR_lst <- lapply(clean_time_LGR_lst, chamber_meas = chamber_meas,AddID_FUNC)
+            # Check that the function worked 
+            head(clean_time_names_LGR_lst[[9]])
       
-      # 1.4 Name all of the elements in the list 
+      # 1.5 Name all of the elements in the list 
       #write a function to pull the first entry in the ID column 
       ExtractID_FUNC <- function(df){
         Run_ID <- df[[1, "ID"]]
@@ -138,7 +170,55 @@
       names(clean_time_names_LGR_lst) <- IDs_in_order
       names(clean_time_names_LGR_lst)
       
+      #Make a list of all of the air runs 
+      chamber_meas_air <- chamber_meas[chamber_meas$Rep == "air", ]
+      air_IDs <- chamber_meas_air$ID
+      air_IDs
+      
       # Make Separate Lists of the Run files and the Air Files 
-      LGR_lst <- clean_time_names_LGR_lst[names(clean_time_names_LGR_lst) != "Air"]
-      LGR_lst_air <- clean_time_names_LGR_lst[names(clean_time_names_LGR_lst) == "Air"]
+      LGR_lst <- clean_time_names_LGR_lst[!names(clean_time_names_LGR_lst) %in% air_IDs]
+      LGR_lst_air <- clean_time_names_LGR_lst[names(clean_time_names_LGR_lst) %in% air_IDs]
       names(LGR_lst)
+
+      
+# ________________________________________________________________________________________________
+##### 2) Trim: Placement Window ####  
+# Trim LGR file to only the time when the chamber was in place on collar or on the water  
+      
+      # 2.1 Calculate Placement Delay 
+      # Subtract the placement time and the launch time to get the number of seconds after launch that the chamber was placed (placement delay in seconds)
+      chamber_meas$Launch_Time_LGR <- as.POSIXct(chamber_meas$Launch_Time_LGR, format = "%Y-%m-%d %H:%M:%OS") # format the time 
+      chamber_meas$Placement_Time_LGR <- as.POSIXct(chamber_meas$Placement_Time_LGR, format = "%Y-%m-%d %H:%M:%OS") # Format the time 
+      chamber_meas$Placement_Delay <- chamber_meas$Placement_Time_LGR - chamber_meas$Launch_Time_LGR #subtract launch time and placement time 
+      chamber_meas$Placement_Delay <- as.numeric(chamber_meas$Placement_Delay) + 60 # Set the placement delay to the next full minute (top) after the chamber was placed 
+      chamber_meas$Chamber_Removed <- chamber_meas$Placement_Delay + (60 * 4.5) #Set the time removed to 4 and a half minutes after started (we commonly get funky things in the last 30 sec as people walk up to the chamber to remove it)
+      names(chamber_meas)[names(chamber_meas) == "Run_ID"] <- "ID"
+      
+      # 2.2  Write a function to trim based on placement delay and removal time 
+      Trim_PlacementDelay_FUNC <- function(concentration_df, windows_df){
+        concentration_df$ID <- as.character(concentration_df$ID)  # format ID to be a character in concentration df
+        windows_df$ID <- as.character(windows_df$ID)  #format ID to be a character in windows_df
+        unique_ID <- concentration_df[1, "ID"]  # save Unique ID as a variable 
+        windows_df_specific <- windows_df[windows_df$ID == unique_ID , ]  # make a new dataframe from the windows_df with only the rows that correspond to the unique ID 
+        
+        placement_delay <- windows_df_specific[1, "Placement_Delay"]  #Using that new data frame that you made save the placement delay time 
+        placement_delay <- as.numeric(placement_delay)  # format that placement delay as numeric 
+        
+        chamber_removed <- windows_df_specific[1, "Chamber_Removed"]  #Using that new data frame that you made save the placement delay time 
+        chamber_removed <- as.numeric(chamber_removed)  # format that placement delay as numeric 
+        
+        concentration_df$start_time <- concentration_df[1, "Date_Time"]  # make a start time column 
+        df <- concentration_df[concentration_df$Time >= placement_delay & concentration_df$Time <= chamber_removed , ]  # make a subsetted data frame that only contains the rows after the chamber was placed  
+        trimmed_df <- as.data.frame(df) # Save output as a data frame 
+      }
+      
+      # Check function 
+      check <- Trim_PlacementDelay_FUNC(LGR_lst[[42]], chamber_meas)
+      head(check)
+      
+      # Apply the function over the full list of LGR data to trim all to the placement time and save as a new list 
+      LGR_lst_placement_trimmed <- lapply(LGR_lst, windows_df = chamber_meas, FUN = Trim_PlacementDelay_FUNC)
+      head(LGR_lst_placement_trimmed[["HAM_SS_GLL_R1_Col3"]]) # Check 
+      
+# ________________________________________________________________________________________________
+##### 3) Trim: Bubbles and Disturbance   ####        
