@@ -172,6 +172,7 @@
       
       #Make a list of all of the air runs 
       chamber_meas_air <- chamber_meas[chamber_meas$Rep == "air", ]
+      chamber_meas <- chamber_meas[chamber_meas$Rep != "air", ]
       air_IDs <- chamber_meas_air$ID
       air_IDs
       
@@ -185,14 +186,15 @@
 ##### 2) Trim: Placement Window ####  
 # Trim LGR file to only the time when the chamber was in place on collar or on the water  
       
-      # 2.1 Calculate Placement Delay 
+      # 2.1 Calculate Placement Delay in seconds 
       # Subtract the placement time and the launch time to get the number of seconds after launch that the chamber was placed (placement delay in seconds)
-      chamber_meas$Launch_Time_LGR <- as.POSIXct(chamber_meas$Launch_Time_LGR, format = "%Y-%m-%d %H:%M:%OS") # format the time 
-      chamber_meas$Placement_Time_LGR <- as.POSIXct(chamber_meas$Placement_Time_LGR, format = "%Y-%m-%d %H:%M:%OS") # Format the time 
-      chamber_meas$Placement_Delay <- chamber_meas$Placement_Time_LGR - chamber_meas$Launch_Time_LGR #subtract launch time and placement time 
+      str(chamber_meas)
+      chamber_meas$Launch_Time <- as.POSIXct(chamber_meas$Launch_Time, format = "%Y-%m-%d %H:%M:%OS") # format the time 
+      chamber_meas$Placement_Time <- as.POSIXct(chamber_meas$Placement_Time, format = "%Y-%m-%d %H:%M:%OS") # Format the time 
+      
+      chamber_meas$Placement_Delay <- chamber_meas$Placement_Time - chamber_meas$Launch_Time #subtract launch time and placement time 
       chamber_meas$Placement_Delay <- as.numeric(chamber_meas$Placement_Delay) + 60 # Set the placement delay to the next full minute (top) after the chamber was placed 
       chamber_meas$Chamber_Removed <- chamber_meas$Placement_Delay + (60 * 4.5) #Set the time removed to 4 and a half minutes after started (we commonly get funky things in the last 30 sec as people walk up to the chamber to remove it)
-      names(chamber_meas)[names(chamber_meas) == "Run_ID"] <- "ID"
       
       # 2.2  Write a function to trim based on placement delay and removal time 
       Trim_PlacementDelay_FUNC <- function(concentration_df, windows_df){
@@ -218,7 +220,7 @@
       
       # Apply the function over the full list of LGR data to trim all to the placement time and save as a new list 
       LGR_lst_placement_trimmed <- lapply(LGR_lst, windows_df = chamber_meas, FUN = Trim_PlacementDelay_FUNC)
-      head(LGR_lst_placement_trimmed[["HAM_SS_GLL_R1_Col3"]]) # Check 
+      head(LGR_lst_placement_trimmed[["Pond208_2023-04-19_R2"]]) # Check 
       
 # ________________________________________________________________________________________________
 ##### 3) Trim: Bubbles and Disturbance   ####        
